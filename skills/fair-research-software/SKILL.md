@@ -38,8 +38,10 @@ already authorized actions. Finish preparatory work before any necessary handoff
    This read-only helper emits JSON to stdout. It does not run repository code,
    contact archives, install packages, or certify FAIRness. Use `--format markdown`
    for a table, and `--strict` to return exit code 1 when local checks fail.
-   PyYAML is optional for CFF parsing. Missing tooling is **not_checked**, not a
-   pass. Full CFF/CodeMeta/RO-Crate schema validation is a separate step.
+   PyYAML is optional for CFF parsing; Python 3.11+ enables root `pyproject.toml`
+   parsing. Missing tooling is **not_checked**, not a pass. Full metadata schema
+   validation is a separate step. Confirm that compared versions describe the
+   same object; benchmark specifications, solvers, and result crates can differ.
 3. Select the relevant practices using [the FAIR4RS checklist](references/fair4rs-checklist.md).
    Read detailed references only for work the task requires:
    - [Metadata and licensing](references/metadata-and-licensing.md): citation,
@@ -50,6 +52,8 @@ already authorized actions. Finish preparatory work before any necessary handoff
      Save Code Now, SWHIDs, and completion evidence.
    - [Reproducibility and provenance](references/reproducibility.md): environments,
      execution, scientific checks, badges, RO-Crate, and semantic annotations.
+   - [Semantic benchmark workflows](references/benchmark-workflows.md): units,
+     configuration bindings, solver execution, result crates, and upload stages.
    - [Source examples](references/source-examples.md): grounded examples and their
      inspection limits. Do not assume their current service status.
 

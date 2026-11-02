@@ -28,8 +28,9 @@ If execution is outside scope, record exact commands and mark it not_checked.
 | JupyterHub/Binder launch | A route to an interactive environment | Successful execution of every notebook or solver |
 | Software Heritage | A link to an archived object | Preservation of every external dependency |
 
-Link badges to their evidence. Pin launch links to a release/commit for a paper's
-results instead of a moving `HEAD`. Identify the scope of a smoke test: creating a
+Link badges to their evidence. Pin source launch links to a release/commit and
+container launches to an image digest for a paper's results; moving `HEAD` or
+`latest` can change. Identify the scope of a smoke test: creating a
 notebook file is not executing its cells, and plotting downloaded data is not
 rerunning the underlying simulation. Do not add a static green badge as evidence
 for work that was never performed.

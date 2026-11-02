@@ -15,6 +15,11 @@ try:
 except ImportError:
     yaml = None
 
+try:
+    import tomllib
+except ImportError:
+    tomllib = None
+
 SKIP_DIRS = {".git", ".hg", ".svn", ".venv", "venv", "node_modules",
              "__pycache__", ".tox", ".mypy_cache", "build", "dist"}
 MAX_METADATA_BYTES = 2_000_000
@@ -164,15 +169,45 @@ def audit(root):
             [top["citation.cff"], top[".zenodo.json"]],
             ".zenodo.json takes precedence over CITATION.cff; review it for stale metadata.")
 
-    versions = {name: str(data["version"]).strip() for name, data in parsed.items()
+    package_name = top.get("pyproject.toml")
+    if package_name:
+        if tomllib is None:
+            add("parse-pyproject.toml", "not_checked", "Python package metadata syntax and project structure",
+                [package_name], "Use Python 3.11+ for built-in TOML parsing; no build backend is executed.")
+        else:
+            try:
+                package = tomllib.loads(read_text(root, package_name))
+                project = package.get("project", {})
+                if not isinstance(project, dict):
+                    raise ValueError("project must be a table")
+                dynamic = project.get("dynamic", [])
+                if not isinstance(dynamic, list) or not all(isinstance(item, str) for item in dynamic):
+                    raise ValueError("project.dynamic must be an array of strings")
+                add("parse-pyproject.toml", "verified", "Python package metadata syntax and project structure",
+                    [package_name], "Full packaging schema and dependency resolution are separate checks.")
+                if "version" in dynamic:
+                    add("package-version-source", "not_checked", "Python package version is statically available",
+                        [package_name], "Dynamic version: inspect its declared source without executing the build backend.")
+                elif isinstance(project.get("version"), str) and project["version"].strip():
+                    parsed["pyproject.toml"] = {"version": project["version"]}
+                else:
+                    add("package-version-source", "not_checked", "Python package version is statically available",
+                        [package_name], "No nonempty static project.version; inspect the packaging convention separately.")
+            except (ValueError, TypeError, OSError, UnicodeError) as exc:
+                add("parse-pyproject.toml", "failed", "Python package metadata syntax and project structure",
+                    [package_name], "Could not parse safely: " + type(exc).__name__)
+
+    # A research object's version can differ from the software that produced it.
+    software_metadata = {"CITATION.cff", "codemeta.json", ".zenodo.json", "pyproject.toml"}
+    versions = {name: str(data["version"]).strip() for name, data in parsed.items() if name in software_metadata
                 if "version" in data and data["version"] is not None and str(data["version"]).strip()}
     if len(versions) > 1:
         normalized = {v[1:] if re.match(r"^v\d", v) else v for v in versions.values()}
         add("version-consistency", "verified" if len(normalized) == 1 else "failed",
-            "Explicit versions agree across parsed root metadata", list(versions),
+            "Explicit versions agree across parsed root software metadata", list(versions),
             json.dumps(versions, sort_keys=True))
     else:
-        add("version-consistency", "not_checked", "Explicit versions agree across parsed root metadata",
+        add("version-consistency", "not_checked", "Explicit versions agree across parsed root software metadata",
             list(versions), "At least two parseable explicit versions are required for this comparison.")
 
     cff = parsed.get("CITATION.cff")
@@ -229,7 +264,8 @@ def audit(root):
             "dirty": bool(state.strip()) if state is not None else None,
             "inventory_method": "git" if is_repo_root else "filesystem",
             "files_inspected_for_inventory": len(files), "excluded_paths": excluded,
-            "tools": {"python": sys.version.split()[0], "pyyaml": getattr(yaml, "__version__", None)},
+            "tools": {"python": sys.version.split()[0], "pyyaml": getattr(yaml, "__version__", None),
+                      "toml_parser": "tomllib" if tomllib is not None else None},
             "scope": "Local static checks only; no FAIR certification, network checks, or target execution.",
             "checks": checks}
 
@@ -239,6 +275,8 @@ def markdown(report):
         return str(value).replace("\n", " ").replace("|", "\\|")
     lines = ["# Local FAIR practice evidence", "", report["scope"], "",
              "Revision: " + (report["commit"] or "unavailable"), "",
+             "Generated: " + report["generated_at"] + "; dirty: " + str(report["dirty"]), "",
+             "Tools: " + json.dumps(report["tools"], sort_keys=True), "",
              "| Check | Status | Evidence | Limitation / detail |",
              "| --- | --- | --- | --- |"]
     for check in report["checks"]:

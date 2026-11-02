@@ -54,6 +54,41 @@ class AuditTests(unittest.TestCase):
         with patch.object(audit_module, "yaml", None):
             self.assertEqual(self.checks()["parse-citation.cff"]["status"], "not_checked")
 
+    def test_missing_toml_support_is_not_checked(self):
+        self.write("pyproject.toml", '[project]\nversion = "1.0"\n')
+        with patch.object(audit_module, "tomllib", None):
+            self.assertEqual(self.checks()["parse-pyproject.toml"]["status"], "not_checked")
+
+    @unittest.skipIf(audit_module.tomllib is None, "TOML parsing requires Python 3.11+")
+    def test_package_version_compared_without_conflating_benchmark_or_crate_versions(self):
+        self.write("pyproject.toml", '[project]\nversion = "1.1.0"\n')
+        self.write("codemeta.json", '{"version":"1.0.0"}')
+        self.write("ro-crate-metadata.json", '{"version":"7.0"}')
+        self.write("benchmark/2.0/pyproject.toml", '[project]\nversion = "2.0"\n')
+        self.assertEqual(self.checks()["version-consistency"]["status"], "failed")
+        self.write("codemeta.json", '{"version":"1.1.0"}')
+        check = self.checks()["version-consistency"]
+        self.assertEqual(check["status"], "verified")
+        self.assertEqual(set(check["evidence"]), {"pyproject.toml", "codemeta.json"})
+
+    @unittest.skipIf(audit_module.tomllib is None, "TOML parsing requires Python 3.11+")
+    def test_dynamic_package_version_does_not_execute_backend(self):
+        self.write("pyproject.toml", '[project]\nname = "demo"\ndynamic = ["version"]\n'
+                   '[build-system]\nrequires = []\nbuild-backend = "backend"\nbackend-path = ["."]\n')
+        self.write("backend.py", "from pathlib import Path\nPath('executed.txt').touch()")
+        checks = self.checks()
+        self.assertEqual(checks["package-version-source"]["status"], "not_checked")
+        self.assertEqual(checks["version-consistency"]["status"], "not_checked")
+        self.assertFalse((self.repo / "executed.txt").exists())
+
+    @unittest.skipIf(audit_module.tomllib is None, "TOML parsing requires Python 3.11+")
+    def test_malformed_or_duplicate_toml_fails(self):
+        for text in ['[project', '[project]\nversion="1"\nversion="2"', 'project = "bad"',
+                     '[project]\ndynamic="version"']:
+            with self.subTest(text=text):
+                self.write("pyproject.toml", text)
+                self.assertEqual(self.checks()["parse-pyproject.toml"]["status"], "failed")
+
     @unittest.skipIf(audit_module.yaml is None, "PyYAML is optional")
     def test_concept_and_version_doi_conflict(self):
         self.write("CITATION.cff", """title: Demo

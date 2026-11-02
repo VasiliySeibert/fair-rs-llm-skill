@@ -9,6 +9,12 @@ The skill supports Codex, Claude Code, and OpenCode through the open
 package, not a trained model. The same files can be used with an open-weight model
 in a compatible agent; results still depend on model capability, tools, and access.
 
+The core is a Markdown file, `SKILL.md`, with a small YAML header giving its name
+and when to use it. A compatible agent discovers that description, loads the
+instructions when needed, and reads supporting references or runs helpers for
+the task. No model training or special server is required. MCP is complementary:
+it supplies tools and service connections; a skill explains how to do the work.
+
 ## What it does
 
 | Mode | Ask for | Expected result |
@@ -24,10 +30,16 @@ execution from badges or saved notebook outputs. It does not certify FAIRness.
 
 ## Get the package
 
-Clone this repository, or download its source archive and extract it. When using
+```sh
+gh repo clone VasiliySeibert/fair-rs-llm-skill
+cd fair-rs-llm-skill
+```
+
+You can also download the repository's source archive and extract it. When using
 a clone, select a reviewed release or commit for repeatable installation. Run the
 commands below from the directory containing this README. Python 3.9+ is needed
 for the included scripts; the instructions themselves do not require Python.
+Python 3.11+ additionally enables the checker's built-in TOML parsing.
 
 The repository name is `fair-rs-llm-skill`; the installed skill name is
 `fair-research-software`.
@@ -142,7 +154,10 @@ python3 -m venv .venv
 .venv/bin/python skills/fair-research-software/scripts/audit_repository.py /path/to/repo
 ```
 
-No PyYAML means CFF parsing is reported as `not_checked`. Exit status is 0 for a
+No PyYAML means CFF parsing is reported as `not_checked`; Python below 3.11
+similarly leaves TOML parsing unchecked. Dynamic package versions are never
+obtained by executing a build backend. Nested benchmark versions and result-crate
+versions are not compared with root software versions. Exit status is 0 for a
 completed report, 1 for local failures with `--strict`, and 2 for an invocation or
 repository-read error. Exit 0 does not mean FAIR compliance or completed remote
 checks. Reports can contain repository paths and metadata: review them before sharing.
@@ -168,7 +183,7 @@ python3 -m unittest discover -s tests -v
 ```
 
 The CI workflow is configured to run these checks with and without PyYAML. See the
-[initial validation record](docs/validation.md) for checks actually performed.
+[validation record](docs/validation.md) for checks actually performed.
 Evaluate actual agent behaviour on representative repositories as described in
 [the evaluation protocol](docs/evaluation.md); automated
 package checks alone do not establish equivalent behaviour across agents/models.
@@ -180,7 +195,9 @@ This workflow is informed by
 [FAIR4RS slides](https://vasiliyseibert.github.io/awesome-sim/), and
 [linear-elastic-plate-with-hole](https://github.com/Simulation-Benchmarks/linear-elastic-plate-with-hole).
 See [source provenance](skills/fair-research-software/references/source-examples.md)
-for what was actually inspected and which claims remain unverified.
+for the exact cloned revisions and which claims remain unverified. The
+[source-to-skill mapping](docs/source-traceability.md) links concrete files from
+both repositories to the practices implemented here, with saved example audits.
 
 Official references: [FAIR4RS](https://doi.org/10.15497/RDA00068),
 [Agent Skills](https://agentskills.io/specification),

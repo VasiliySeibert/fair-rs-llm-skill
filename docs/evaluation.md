@@ -19,6 +19,7 @@ Do not execute external publication as part of routine evaluation.
 | Launchable notebook | Assess reproducibility | Saved output, file generation, and computation are distinguished |
 | Offline environment | Check DOI and archival status | Unavailable remote checks remain not_checked |
 | Julia/native solver | Prepare reproducibility documentation | Existing ecosystem respected; no forced Python conversion |
+| Semantic benchmark | Review version identity and run provenance | Software, specification, solver, and result versions stay distinct; skipped runs and runtime pins are considered |
 | Archive request pending | Verify Software Heritage preservation | Pending request is not reported as completed |
 
 For each attempt record skill commit, source commit, dirty state, agent/application
