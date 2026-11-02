@@ -1,0 +1,11 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "FAIR-RS LLM Skill",
+  "description": "A portable Agent Skill with guidance, templates, and local checks for FAIR research software practices.",
+  "license": "https://spdx.org/licenses/MIT",
+  "author": [{"@type": "Person", "givenName": "Vasiliy", "familyName": "Seibert", "@id": "https://orcid.org/0000-0002-7121-6816"}],
+  "programmingLanguage": ["Python"],
+  "softwareRequirements": "Python >=3.9 for helper scripts; optional PyYAML for CFF parsing",
+  "keywords": ["FAIR4RS", "research software", "agent skills", "reproducibility", "software preservation"]
+}

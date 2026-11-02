@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "Please cite the repository and exact commit used until an archived release DOI is available."
+type: software
+title: "FAIR-RS LLM Skill"
+abstract: "A portable Agent Skill with guidance, templates, and local checks for FAIR research software practices."
+authors:
+  - family-names: Seibert
+    given-names: Vasiliy
+    orcid: "https://orcid.org/0000-0002-7121-6816"
+license: MIT
+keywords:
+  - FAIR4RS
+  - research software
+  - agent skills
+  - reproducibility
+  - software preservation

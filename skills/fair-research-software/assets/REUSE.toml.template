@@ -1,0 +1,11 @@
+version = 1
+
+# Scope these paths to files whose rights have been established.
+# Preserve third-party notices and check overlapping patterns.
+[[annotations]]
+path = ["REPLACE_SCOPED_PATH_GLOB"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "REPLACE_YEAR REPLACE_RIGHTSHOLDER"
+SPDX-License-Identifier = "REPLACE_SPDX_LICENSE"
+
+# Include the corresponding license text in LICENSES/ and run reuse lint.

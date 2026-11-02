@@ -1,0 +1,4 @@
+interface:
+  display_name: "FAIR Research Software"
+  short_description: "Audit and prepare research software for reuse"
+  default_prompt: "Use $fair-research-software to audit this repository and prepare evidence-backed FAIR improvements."
